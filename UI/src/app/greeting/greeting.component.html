@@ -1,0 +1,64 @@
+<html lang="en">
+  <head>
+    <title>Greeting Page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+  <div class="container-fluid">
+    <h1>{{message}}</h1>
+    <button (click)=handleLogout() class="btn btn-success">Logout</button>
+  <div class="row">
+    <div class="col-md-3">
+  <form>
+    <div class="form-group">
+      <label for="greetingID">GreetingId</label>
+      <input [(ngModel)]="greetingID" type="text" class="form-control" name="greetingID" placeholder="Enter Greeting" required>
+    </div>
+    <button type="submit" class="btn btn-primary" (click)="showMessage()">Show Message</button>
+  </form>
+    <div class="alert alert-warning" *ngIf='error'>{{errorMessage}}</div>
+    <div class="alert alert-success" *ngIf='success'>{{greeting.message}}</div>
+  </div>
+  </div>
+
+
+  <div class="col-md-8">
+    <form novalidate>
+      <h1>Add Greeting Message</h1>
+      <div class="form-group">
+        <label for="greetingID">GreetingId</label>
+        <input type="text" [(ngModel)]="newId" class="form-control" name="id" placeholder="Enter New Greeting Id" required="required"/>
+        <label for="greetingID">GreetingMessage</label>
+        <input type="text" class="form-control" [(ngModel)]="newMessage" name="message" placeholder="Enter Greeting New Message" required>
+      </div>
+      <button type="Submit" class="btn btn-primary" (click)="addMessage()">Add Greeting</button>
+    </form>
+    <div class="alert alert-warning" *ngIf='newerror'>{{errorMessage}}</div>
+    <div class="alert alert-success" *ngIf='newsuccess'>{{greeting.message}}</div>
+    </div>
+
+    <div class="col-md-8">
+      <form>
+        <h1>Change Greeting Message</h1>
+        <div class="form-group">
+          <label for="greetingID">GreetingId</label>
+          <input type="text" [(ngModel)]="editId" class="form-control" name="id" aria-describedby="emailHelp" placeholder="Enter Greeting Id">
+        </div>
+        <div class="form-group">
+          <label for="greetingID">GreetingMessage</label>
+          <input type="text" class="form-control" [(ngModel)]="editMessage" name="message" aria-describedby="emailHelp" placeholder="Enter Greeting Message">
+        </div>
+        <button type="Submit" class="btn btn-primary" (click)="changeMessage()">Change Greeting</button>
+      </form>
+      <div class="alert alert-warning" *ngIf='editerror'>{{errorMessage}}</div>
+    <div class="alert alert-success" *ngIf='editsuccess'>{{greeting.message}}</div>
+    </div>
+    
+  </div> 
+  </body>
+  </html>
+  
