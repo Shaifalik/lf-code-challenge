@@ -1,41 +1,47 @@
 package com.labforward.api.hello.controller;
 
-import com.labforward.api.core.exception.ResourceNotFoundException;
 import com.labforward.api.hello.domain.Greeting;
+import com.labforward.api.hello.domain.GreetingDTO;
 import com.labforward.api.hello.service.HelloWorldService;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+
+@CrossOrigin(origins="http://localhost:4200",allowedHeaders = "*")
 @RestController
 public class HelloController {
 
-	public static final String GREETING_NOT_FOUND = "Greeting Not Found";
+    @Autowired
+    private ModelMapper modelMapper;
+    private HelloWorldService helloWorldService;
 
-	private HelloWorldService helloWorldService;
+    public HelloController(HelloWorldService helloWorldService) {
+        this.helloWorldService = helloWorldService;
+    }
 
-	public HelloController(HelloWorldService helloWorldService) {
-		this.helloWorldService = helloWorldService;
-	}
+    @GetMapping("/hello")
+    public ResponseEntity<GreetingDTO> getDefaultGreeting() {
+        return ResponseEntity.ok(modelMapper.map(helloWorldService.getDefaultGreeting(), GreetingDTO.class));
+    }
 
-	@RequestMapping(value = "/hello", method = RequestMethod.GET)
-	@ResponseBody
-	public Greeting helloWorld() {
-		return getHello(HelloWorldService.DEFAULT_ID);
-	}
+    @GetMapping(value = "/hello/{id}")
+    public ResponseEntity<GreetingDTO> getGreetingById(@PathVariable String id) {
+        Greeting greeting = helloWorldService.getGreeting(id);
+        return ResponseEntity.ok(modelMapper.map(greeting, GreetingDTO.class));
+    }
 
-	@RequestMapping(value = "/hello/{id}", method = RequestMethod.GET)
-	@ResponseBody
-	public Greeting getHello(@PathVariable String id) {
-		return helloWorldService.getGreeting(id)
-		                        .orElseThrow(() -> new ResourceNotFoundException(GREETING_NOT_FOUND));
-	}
+    @PostMapping(value = "/hello/create")
+    public ResponseEntity<GreetingDTO> newGreeting(@RequestBody GreetingDTO request) {
+        Greeting greeting = modelMapper.map(request, Greeting.class);
+        return new ResponseEntity<>(modelMapper.map(helloWorldService.createGreeting(greeting), GreetingDTO.class), HttpStatus.CREATED);
+    }
 
-	@RequestMapping(value = "/hello", method = RequestMethod.POST)
-	public Greeting createGreeting(@RequestBody Greeting request) {
-		return helloWorldService.createGreeting(request);
-	}
+    @PutMapping(value = "/hello/update/{id}")
+    public ResponseEntity<GreetingDTO> replaceGreeting(@PathVariable String id, @RequestBody GreetingDTO request) {
+        Greeting greeting = modelMapper.map(request, Greeting.class);
+        return ResponseEntity.ok(modelMapper.map(helloWorldService.updateGreeting(id, greeting), GreetingDTO.class));
+    }
 }

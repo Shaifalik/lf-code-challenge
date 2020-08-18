@@ -1,61 +1,54 @@
 package com.labforward.api.hello.service;
 
+import com.labforward.api.core.exception.BadRequestException;
+import com.labforward.api.core.exception.ResourceNotFoundException;
 import com.labforward.api.core.validation.EntityValidator;
+import com.labforward.api.hello.ApplicationConstants;
 import com.labforward.api.hello.domain.Greeting;
+import com.labforward.api.hello.repo.HelloWorldRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class HelloWorldService {
+    @Autowired
+    private HelloWorldRepository helloWorldRepository;
 
-	public static final String GREETING_NOT_FOUND = "Greeting Not Found";
+    private EntityValidator entityValidator;
 
-	public static String DEFAULT_ID = "default";
+    public HelloWorldService(EntityValidator entityValidator) {
+        this.entityValidator = entityValidator;
+    }
 
-	public static String DEFAULT_MESSAGE = "Hello World!";
+    public Greeting createGreeting(Greeting request) {
+        entityValidator.validateCreate(request);
+        Optional<Greeting> opGreeting = helloWorldRepository.findGreeting(request.getId());
+        if (opGreeting.isPresent()) {
+            throw new BadRequestException(ApplicationConstants.ID_ALREADY_EXIST);
+        }
+        if (request.getId()== null || request.getId().isEmpty())
+            request.setId(UUID.randomUUID().toString());
 
-	private Map<String, Greeting> greetings;
+        return helloWorldRepository.saveGreeting(request);
+    }
 
-	private EntityValidator entityValidator;
+    public Greeting getGreeting(String id) {
+        entityValidator.validateId(id);
+        return helloWorldRepository.findGreeting(id).
+                orElseThrow(() -> new ResourceNotFoundException(ApplicationConstants.GREETING_NOT_FOUND + " " + id));
+    }
 
-	public HelloWorldService(EntityValidator entityValidator) {
-		this.entityValidator = entityValidator;
+    public Greeting getDefaultGreeting() {
+        return getGreeting(ApplicationConstants.DEFAULT_ID);
+    }
 
-		this.greetings = new HashMap<>(1);
-		save(getDefault());
-	}
-
-	private static Greeting getDefault() {
-		return new Greeting(DEFAULT_ID, DEFAULT_MESSAGE);
-	}
-
-	public Greeting createGreeting(Greeting request) {
-		entityValidator.validateCreate(request);
-
-		request.setId(UUID.randomUUID().toString());
-		return save(request);
-	}
-
-	public Optional<Greeting> getGreeting(String id) {
-		Greeting greeting = greetings.get(id);
-		if (greeting == null) {
-			return Optional.empty();
-		}
-
-		return Optional.of(greeting);
-	}
-
-	public Optional<Greeting> getDefaultGreeting() {
-		return getGreeting(DEFAULT_ID);
-	}
-
-	private Greeting save(Greeting greeting) {
-		this.greetings.put(greeting.getId(), greeting);
-
-		return greeting;
-	}
+    public Greeting updateGreeting(String id, Greeting request) {
+        entityValidator.validateUpdate(id, request);
+        helloWorldRepository.findGreeting(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ApplicationConstants.GREETING_NOT_FOUND + " " + id));
+        return helloWorldRepository.saveGreeting(request);
+    }
 }
